@@ -1,0 +1,105 @@
+
+from datetime import date
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+
+from festival import festival_info, load_data, load_festival
+
+app = FastAPI(title="Deauville Festival du Rire 2027")
+
+
+@app.get("/api/festival")
+def get_festival() -> dict:
+    return festival_info(load_data())
+
+
+@app.get("/api/venues")
+def get_venues() -> list[dict]:
+    festival = load_festival()
+    return [venue.to_view() for venue in festival.venues]
+
+
+@app.get("/api/artists")
+def get_artists() -> list[dict]:
+    festival = load_festival()
+    return [
+        artist.to_view()
+        for artist in sorted(festival.artists, key=lambda item: item.slug)
+    ]
+
+
+@app.get("/api/artists/{slug}")
+def get_artist(slug: str) -> dict:
+    festival = load_festival()
+
+    artist = next(
+        (item for item in festival.artists if item.slug == slug),
+        None,
+    )
+    if artist is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No artist '{slug}'.",
+        )
+
+    result = artist.to_view()
+    result["performances"] = [
+        performance.to_view()
+        for performance in festival.programme()
+        if performance.involves(artist.slug)
+    ]
+    return result
+
+
+@app.get("/api/programme")
+def get_programme(
+    day: date | None = None,
+    venue: str | None = None,
+) -> list[dict]:
+    festival = load_festival()
+
+    if venue is not None and not any(
+        item.slug == venue for item in festival.venues
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No venue '{venue}'.",
+        )
+
+    return [
+        performance.to_view()
+        for performance in festival.programme(day=day, venue=venue)
+    ]
+
+
+@app.get("/api/performances/{performance_id}")
+def get_performance(performance_id: str) -> dict:
+    festival = load_festival()
+
+    performance = next(
+        (
+            item
+            for item in festival.performances
+            if item.id == performance_id
+        ),
+        None,
+    )
+
+    if performance is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No performance '{performance_id}'.",
+        )
+
+    return performance.to_view()
+
+
+web_directory = Path(__file__).parent / "web" / "public"
+if web_directory.is_dir():
+    app.mount(
+        "/",
+        StaticFiles(directory=str(web_directory), html=True),
+        name="website",
+    )
