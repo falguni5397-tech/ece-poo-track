@@ -1,3 +1,4 @@
+
 {
   "name": "Deauville Festival du Rire 2027",
   "first_day": "2027-06-10",
@@ -83,16 +84,6 @@
     {
       "name": "Élodie Marchal",
       "bio": "Stand-up about sport, failure and trying again.",
-      "photo_url": ""
-    },
-    {
-      "name": "falguni",
-      "bio": "f",
-      "photo_url": "w"
-    },
-    {
-      "name": "Test Artist Falguni",
-      "bio": "Temporary API test",
       "photo_url": ""
     }
   ],
@@ -367,16 +358,6 @@
         "max-pellerin",
         "jeanne-aubry"
       ]
-    },
-    {
-      "kind": "solo",
-      "title": "API test show",
-      "venue": "theatre-des-planches",
-      "start": "2027-06-12T18:00",
-      "duration_minutes": 30,
-      "description": "test",
-      "artist": "elodie-marchal",
-      "min_age": 0
     }
   ]
 }
